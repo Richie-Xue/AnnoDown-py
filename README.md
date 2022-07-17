@@ -12,7 +12,7 @@
    - Strike out 类型将被删除。
 2. 矩形 Squares：若矩形标注无填充色，提取为区域截图。
 3. 自由文本 Freetext：提取为普通文本。
-4. 注释 Text：提取为角柱。
+4. 注释 Text：提取为脚注。
 
 ![example0.png](img/example0.png)
 
