@@ -236,6 +236,7 @@ def process_markups(markups: List, page: fitz.Page) -> List:
                     words = word + words
             idx -= 1
         words.strip()
+        words = ' '.join(words.split())
         return words
 
     def save_markup():
@@ -423,7 +424,7 @@ def print_text_mode(markdown: str, annots: List, output: str, page: int, footnot
             markdown += '[^' + output + '_' + str(footnotes_num) + ']\n\n[^' + output + '_' + str(footnotes_num) + ']: ' + annot[0] + '\n\n'
             footnotes_num += 1
         elif annot[1] == fitz.PDF_ANNOT_SQUARE:
-            image_name = output + '_' + str(page) + '_' + str(round(annot[3].x0)) + '_' + str(round(annot[3].y0))
+            image_name = output.replace(' ', '_') + '_' + str(page) + '_' + str(round(annot[3].x0)) + '_' + str(round(annot[3].y0))
             if imagefolder:
                 image_path = os.path.join(imagefolder, image_name) + '.png'
                 folder = os.path.join(os.path.join(input_path, output), imagefolder)
