@@ -493,7 +493,7 @@ def AnnoDown():
             if args.overwrite:
                 print("Overwriting the folder...")
             else:
-                print("Exportation stopped.")
+                print("Exportation stopped. Use -ow parameter to overwrite.")
                 return
     else:
         os.mkdir(path)
