@@ -477,7 +477,7 @@ def AnnoDown():
     if args.start:
         start = args.start - 1
     if args.end:
-        end = args.end - 1
+        end = args.end
 
     (input_path, input_file) = os.path.split(args.input)
     (output, _) = os.path.splitext(input_file)
