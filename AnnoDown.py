@@ -32,7 +32,7 @@ def get_markups(annot: fitz.Annot, intersect_threshold: float = 0.9) -> Tuple:
                         for span in line['spans']:
                             for char in span['chars']:
                                 line_words += char['c']
-                                if char['bbox'] in rect or fitz.Rect(char['bbox']).intersect(rect).get_area() >= fitz.Rect(char['bbox']).get_area() * intersect_threshold:
+                                if char['bbox'] in rect or (fitz.Rect(char['bbox']).get_area() > 0.0 and fitz.Rect(char['bbox']).intersect(rect).get_area() >= fitz.Rect(char['bbox']).get_area() * intersect_threshold):
                                     if loci[2] == -1:
                                         loci[1] = char['bbox'][0]
                                         loci[2] = char_idx
