@@ -12,6 +12,7 @@ def get_markups(annot: fitz.Annot, intersect_threshold: float = 0.9) -> Tuple:
         vertices = [(annot.rect.x0, annot.rect.y0), (annot.rect.x1, annot.rect.y0), (annot.rect.x0, annot.rect.y1), (annot.rect.x1, annot.rect.y1)]
     page = annot.parent
     rawdict = page.get_text('rawdict')
+    blocks = page.get_text('blocks')
     words = ''
     loci = [0, 0.0, -1, 0, -1]
 
@@ -25,7 +26,7 @@ def get_markups(annot: fitz.Annot, intersect_threshold: float = 0.9) -> Tuple:
                     line_words = ''
                     loci[0] = line_idx
                     loci[2] = -1
-                    if fitz.Rect(line['bbox']).y0 <= (anno_rect.y0 + anno_rect.y1) / 2 <= fitz.Rect(line['bbox']).y1:
+                    if (not blocks[block['number']][4].isspace()) and fitz.Rect(line['bbox']).y0 <= (anno_rect.y0 + anno_rect.y1) / 2 <= fitz.Rect(line['bbox']).y1:
                         rect = copy.deepcopy(anno_rect)
                         rect.include_point(fitz.Point(anno_rect.x0, fitz.Rect(line['bbox']).y0))
                         rect.include_point(fitz.Point(anno_rect.x0, fitz.Rect(line['bbox']).y1))
@@ -55,7 +56,7 @@ def get_markups(annot: fitz.Annot, intersect_threshold: float = 0.9) -> Tuple:
                 for line in block['lines']:
                     char_idx = 0
                     loci[0] = line_idx
-                    if fitz.Rect(line['bbox']).y0 <= (anno_rect.y0 + anno_rect.y1) / 2 <= fitz.Rect(line['bbox']).y1:
+                    if (not blocks[block['number']][4].isspace()) and fitz.Rect(line['bbox']).y0 <= (anno_rect.y0 + anno_rect.y1) / 2 <= fitz.Rect(line['bbox']).y1:
                         rect = copy.deepcopy(anno_rect)
                         rect.include_point(fitz.Point(anno_rect.x0, fitz.Rect(line['bbox']).y0))
                         rect.include_point(fitz.Point(anno_rect.x0, fitz.Rect(line['bbox']).y1))
@@ -83,7 +84,7 @@ def get_markups(annot: fitz.Annot, intersect_threshold: float = 0.9) -> Tuple:
                 for line in block['lines']:
                     char_idx = 0
                     loci[3] = line_idx
-                    if fitz.Rect(line['bbox']).y0 <= (anno_rect.y0 + anno_rect.y1) / 2 <= fitz.Rect(line['bbox']).y1:
+                    if (not blocks[block['number']][4].isspace()) and fitz.Rect(line['bbox']).y0 <= (anno_rect.y0 + anno_rect.y1) / 2 <= fitz.Rect(line['bbox']).y1:
                         rect = copy.deepcopy(anno_rect)
                         rect.include_point(fitz.Point(anno_rect.x0, fitz.Rect(line['bbox']).y0))
                         rect.include_point(fitz.Point(anno_rect.x0, fitz.Rect(line['bbox']).y1))
@@ -372,9 +373,11 @@ def get_squares(annot: fitz.Annot, num_free_text: int, intersect_threshold: floa
             line_idx += 1
 
     image_rect = get_image_rect(annot, image_min)
+    words = words.replace('*', '\\*')
+    words = words.strip()
 
     return page.get_pixmap(clip=image_rect, dpi=dpi), annot.type[0], [closest_line,
-                                                                      10000 + point.x + point.y], rect, words.replace('*', '\\*')
+                                                                      10000 + point.x + point.y], rect, words
 
 
 def get_annots(page: fitz.Page) -> List:
@@ -395,7 +398,7 @@ def get_annots(page: fitz.Page) -> List:
 
     while annot:
         if annot.type[0] in [fitz.PDF_ANNOT_HIGHLIGHT, fitz.PDF_ANNOT_UNDERLINE, fitz.PDF_ANNOT_STRIKE_OUT]:
-            markup = get_markups(annot, intersect_threshold=0.9)
+            markup = get_markups(annot, intersect_threshold=0.5)
             markups.append(markup)
         elif annot.type[0] in [fitz.PDF_ANNOT_TEXT, fitz.PDF_ANNOT_FREE_TEXT]:
             text = get_texts(annot, num_free_text=num_free_text)
