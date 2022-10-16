@@ -202,7 +202,7 @@ def process_markups(markups: List, page: fitz.Page) -> List:
                     words = word + words
             elif markup[1] == fitz.PDF_ANNOT_HIGHLIGHT:
                 if span[0] not in all_markups:
-                    if not markup[4]:
+                    if markup[4]:
                         if word == '' or word[0] == ' ':
                             word = " **" + word.lstrip()
                         else:
