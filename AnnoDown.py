@@ -5,14 +5,13 @@ import argparse
 
 import fitz  # install with 'pip install pymupdf'
 
+rawdict = {}
+blocks = {}
 
 def get_markups(annot: fitz.Annot, intersect_threshold: float = 0.9) -> Tuple:
     vertices = annot.vertices
     if not vertices:
         vertices = [(annot.rect.x0, annot.rect.y0), (annot.rect.x1, annot.rect.y0), (annot.rect.x0, annot.rect.y1), (annot.rect.x1, annot.rect.y1)]
-    page = annot.parent
-    rawdict = page.get_text('rawdict')
-    blocks = page.get_text('blocks')
     words = ''
     loci = [0, 0.0, -1, 0, -1]
 
@@ -142,7 +141,6 @@ def process_markups(markups: List, page: fitz.Page) -> List:
 
     line_ends = []
 
-    rawdict = page.get_text('rawdict')
     for block in rawdict['blocks']:
         if block['type'] == 0:
             for line in block['lines']:
@@ -204,7 +202,7 @@ def process_markups(markups: List, page: fitz.Page) -> List:
                     words = word + words
             elif markup[1] == fitz.PDF_ANNOT_HIGHLIGHT:
                 if span[0] not in all_markups:
-                    if markup[4]:
+                    if not markup[4]:
                         if word == '' or word[0] == ' ':
                             word = " **" + word.lstrip()
                         else:
@@ -299,8 +297,6 @@ def process_markups(markups: List, page: fitz.Page) -> List:
 def get_texts(annot: fitz.Annot, num_free_text: int) -> Tuple:
     page = annot.parent
     annot_rect = annot.rect
-    blocks = page.get_text('blocks')
-    rawdict = page.get_text('rawdict')
     point = fitz.Point((annot_rect.x0 + annot_rect.x1)/2, annot_rect.y0)
     min_distance = page.rect.width + page.rect.height
     distance = 0.0
@@ -343,12 +339,11 @@ def get_image_rect(annot: fitz.Annot, image_min=0.5) -> fitz.Rect:
     return fitz.Rect(x0, annot_rect.y0, x1, annot_rect.y1)
 
 
-def get_squares(annot: fitz.Annot, num_free_text: int, intersect_threshold: float = 0.9, dpi: float = 300,
+def get_squares(annot: fitz.Annot, num_free_text: int, intersect_threshold: float = 0.5, dpi: float = 300,
                 image_min: float = 0.5) -> Tuple:
     page = annot.parent
     rect = annot.rect
     point = fitz.Point((rect.x0 + rect.x1)/2, rect.y0)
-    rawdict = page.get_text('rawdict')
     words = ''
     min_distance = page.rect.width + page.rect.height
     distance = 0.0
@@ -389,6 +384,11 @@ def get_annots(page: fitz.Page) -> List:
 
     num_free_text = 0
 
+    global rawdict
+    rawdict = page.get_text('rawdict')
+    global blocks
+    blocks = page.get_text('blocks')
+
     while annot:
         if annot.type[0] == fitz.PDF_ANNOT_FREE_TEXT:
             num_free_text += 1
@@ -404,7 +404,7 @@ def get_annots(page: fitz.Page) -> List:
             text = get_texts(annot, num_free_text=num_free_text)
             texts.append(text)
         elif annot.type[0] == fitz.PDF_ANNOT_SQUARE and not annot.colors['fill']:
-            square = get_squares(annot, num_free_text=num_free_text, intersect_threshold=0.9)
+            square = get_squares(annot, num_free_text=num_free_text, intersect_threshold=0.5)
             squares.append(square)
         else:
             pass
