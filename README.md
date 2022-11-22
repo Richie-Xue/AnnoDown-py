@@ -21,7 +21,7 @@
 Python 3.8.13，基于 [PyMuPDF](https://pymupdf.readthedocs.io/en/latest/#) 。
 
 ```
-pip install pymupdf=1.20.1
+pip install pymupdf==1.20.1
 ```
 
 ## 使用方法

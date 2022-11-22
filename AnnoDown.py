@@ -233,6 +233,12 @@ def process_markups(markups: List, page: fitz.Page) -> List:
                     else:
                         word = word + "**"
                     words = word + words
+            elif markup[1] == fitz.PDF_ANNOT_STRIKE_OUT:
+                if span[0] not in all_markups:
+                    if markup[4]:
+                        word = markup[4]
+                        words = word + words
+                    all_markups.append(span[0])
             idx -= 1
         words.strip()
         words = ' '.join(words.split())
@@ -376,11 +382,15 @@ def get_squares(annot: fitz.Annot, num_free_text: int, intersect_threshold: floa
 
 
 def get_annots(page: fitz.Page) -> List:
+
     markups = []
     texts = []
     squares = []
 
     annot = page.first_annot
+
+    if not annot:
+        return []
 
     num_free_text = 0
 
@@ -507,10 +517,8 @@ def AnnoDown():
     def print_info(annots_num: int):
         if annots_num == 0:
             print(end='\r')
-        elif annots_num == 1:
-            print("1 annotation")
-        elif annots_num > 1:
-            print(str(annots_num) + " annotations")
+        else:
+            print(str(annots_num) + " annotation(s)")
 
     markdown = ''
     footnotes = 1
